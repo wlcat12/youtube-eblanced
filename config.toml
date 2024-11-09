@@ -1,6 +1,0 @@
-[YT Eblanced]
-apkmirror-dlurl = "https://apkmirror.com/apk/google-inc/youtube/"
-arch = "arm64-v8a"
-build-mode = "both"
-included-patches = "'Hide ads' 'Video ads' 'SponsorBlock' 'Custom branding' 'Return YouTube Dislike' 'Miniplayer' 'Disable player popup panels' 'Change start page' 'Hide crowdfunding box' 'Disable fullscreen ambient mode' 'Enable tablet layout' 'Bypass image region restrictions' 'Downloads' 'Copy video URL' 'Remove viewer discretion dialog' 'Seekbar tapping' 'Always repeat' 'Remove background playback restrictions' 'Bypass URL redirects' 'Open links externally' 'Spoof device dimensions' 'GmsCore support' 'Announcements' 'Spoof client' 'Check watch history domain name resolution' 'Remove tracking query parameter' 'Enable debugging' 'Playback speed'"
-exclusive-patches = true
