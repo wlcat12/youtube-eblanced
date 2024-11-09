@@ -1,15 +1,6 @@
 #!/usr/bin/env bash
 
 MODULE_TEMPLATE_DIR="revanced-magisk"
-<<<<<<< HEAD
-TEMP_DIR="temp"
-BIN_DIR="bin"
-BUILD_DIR="build"
-
-if [ "${GITHUB_TOKEN-}" ]; then GH_HEADER="Authorization: token ${GITHUB_TOKEN}"; else GH_HEADER=; fi
-NEXT_VER_CODE=${NEXT_VER_CODE:-$(date +'%Y%m%d')}
-REBUILD=${REBUILD:-false}
-=======
 CWD=$(pwd)
 TEMP_DIR=${CWD}/"temp"
 BIN_DIR=${CWD}/"bin"
@@ -17,7 +8,6 @@ BUILD_DIR=${CWD}/"build"
 
 if [ "${GITHUB_TOKEN-}" ]; then GH_HEADER="Authorization: token ${GITHUB_TOKEN}"; else GH_HEADER=; fi
 NEXT_VER_CODE=${NEXT_VER_CODE:-$(date +'%Y%m%d')}
->>>>>>> template/main
 OS=$(uname -o)
 
 toml_prep() { __TOML__=$(tr -d '\t\r' <<<"$1" | tr "'" '"' | grep -o '^[^#]*' | grep -v '^$' | sed -r 's/(\".*\")|\s*/\1/g; 1i []'); }
@@ -47,10 +37,7 @@ abort() {
 
 get_rv_prebuilts() {
 	local cli_src=$1 cli_ver=$2 integrations_src=$3 integrations_ver=$4 patches_src=$5 patches_ver=$6
-<<<<<<< HEAD
-=======
 	local integs_file=""
->>>>>>> template/main
 	pr "Getting prebuilts (${patches_src%/*})" >&2
 	local cl_dir=${patches_src%/*}
 	cl_dir=${TEMP_DIR}/${cl_dir,,}-rv
@@ -67,34 +54,6 @@ get_rv_prebuilts() {
 		dir=${TEMP_DIR}/${dir,,}-rv
 		[ -d "$dir" ] || mkdir "$dir"
 
-<<<<<<< HEAD
-		local rv_rel="https://api.github.com/repos/${src}/releases/"
-		if [ "$ver" ]; then rv_rel+="tags/${ver}"; else rv_rel+="latest"; fi
-
-		local resp asset url name file
-		resp=$(gh_req "$rv_rel" -) || return 1
-		asset=$(jq -e -r ".assets[] | select(.name | endswith(\"$ext\"))" <<<"$resp") || return 1
-		url=$(jq -r .url <<<"$asset")
-		name=$(jq -r .name <<<"$asset")
-		file="${dir}/${name}"
-		[ -f "$file" ] || REBUILD=true
-
-		echo "$tag: $(cut -d/ -f5 <<<"$url")/${name}  " >>"${cl_dir}/changelog.md"
-		gh_dl "$file" "$url" >&2 || return 1
-		echo -n "$file "
-		if [ "$tag" = "Patches" ]; then
-			local tag_name
-			tag_name=$(jq -r '.tag_name' <<<"$resp")
-			name="patches-${tag_name}.json"
-			file="${dir}/${name}"
-			url=$(jq -e -r '.assets[] | select(.name | endswith("json")) | .url' <<<"$resp") || return 1
-			gh_dl "$file" "$url" >&2 || return 1
-			echo -n "$file "
-			echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"
-		fi
-	done
-	echo
-=======
 		local rv_rel="https://api.github.com/repos/${src}/releases" name_ver
 		if [ "$ver" = "dev" ]; then
 			name_ver="*-dev*"
@@ -161,7 +120,6 @@ get_rv_prebuilts() {
 		fi
 		rm -r "${integs_file}-zip" || :
 	fi
->>>>>>> template/main
 }
 
 get_prebuilts() {
@@ -184,11 +142,7 @@ get_prebuilts() {
 config_update() {
 	if [ ! -f build.md ]; then abort "build.md not available"; fi
 	declare -A sources
-<<<<<<< HEAD
-	: >$TEMP_DIR/skipped
-=======
 	: >"$TEMP_DIR"/skipped
->>>>>>> template/main
 	local conf=""
 	# shellcheck disable=SC2154
 	conf+=$(sed '1d' <<<"$main_config_t")
@@ -200,29 +154,13 @@ config_update() {
 		enabled=$(toml_get "$t" enabled) || enabled=true
 		if [ "$enabled" = false ]; then continue; fi
 		PATCHES_SRC=$(toml_get "$t" patches-source) || PATCHES_SRC=$DEF_PATCHES_SRC
-<<<<<<< HEAD
-		if [[ -v sources[$PATCHES_SRC] ]]; then
-			if [ "${sources[$PATCHES_SRC]}" = 1 ]; then
-=======
 		PATCHES_VER=$(toml_get "$t" patches-version) || PATCHES_VER=$DEF_PATCHES_VER
 		if [[ -v sources["$PATCHES_SRC/$PATCHES_VER"] ]]; then
 			if [ "${sources["$PATCHES_SRC/$PATCHES_VER"]}" = 1 ]; then
->>>>>>> template/main
 				conf+="$t"
 				conf+=$'\n'
 			fi
 		else
-<<<<<<< HEAD
-			sources[$PATCHES_SRC]=0
-			if ! last_patches=$(gh_req "https://api.github.com/repos/${PATCHES_SRC}/releases/latest" - |
-				jq -e -r '.assets[] | select(.name | endswith("jar")) | .name'); then
-				abort oops
-			fi
-			cur_patches=$(sed -n "s/.*Patches: ${PATCHES_SRC%%/*}\/\(.*\)/\1/p" build.md | xargs)
-			if [ "$cur_patches" ] && [ "$last_patches" ]; then
-				if [ "${cur_patches}" != "$last_patches" ]; then
-					sources[$PATCHES_SRC]=1
-=======
 			sources["$PATCHES_SRC/$PATCHES_VER"]=0
 			local rv_rel="https://api.github.com/repos/${PATCHES_SRC}/releases"
 			if [ "$PATCHES_VER" = "dev" ]; then
@@ -239,16 +177,11 @@ config_update() {
 			if [ "$last_patches" ]; then
 				if ! OP=$(grep "^Patches: ${PATCHES_SRC%%/*}/" build.md | grep "$last_patches"); then
 					sources["$PATCHES_SRC/$PATCHES_VER"]=1
->>>>>>> template/main
 					prcfg=true
 					conf+="$t"
 					conf+=$'\n'
 				else
-<<<<<<< HEAD
-					echo "Patches: ${PATCHES_SRC%%/*}/${cur_patches}  " >>$TEMP_DIR/skipped
-=======
 					echo "$OP" >>"$TEMP_DIR"/skipped
->>>>>>> template/main
 				fi
 			fi
 		fi
@@ -319,10 +252,7 @@ isoneof() {
 
 merge_splits() {
 	local bundle=$1 output=$2
-<<<<<<< HEAD
-=======
 	pr "Merging splits"
->>>>>>> template/main
 	gh_dl "$TEMP_DIR/apkeditor.jar" "https://github.com/REAndroid/APKEditor/releases/download/V1.3.9/APKEditor-1.3.9.jar" >/dev/null || return 1
 	if ! OP=$(java -jar "$TEMP_DIR/apkeditor.jar" merge -i "${bundle}" -o "${bundle}.mzip" -clean-meta -f 2>&1); then
 		epr "$OP"
@@ -332,13 +262,6 @@ merge_splits() {
 	mkdir "${bundle}-zip"
 	unzip -qo "${bundle}.mzip" -d "${bundle}-zip"
 	cd "${bundle}-zip" || abort
-<<<<<<< HEAD
-	zip -0rq "../../${bundle}.zip" .
-	cd ../.. || abort
-	pr "Merging splits"
-	patch_apk "${bundle}.zip" "${output}" "--exclusive" "${args[cli]}" "${args[ptjar]}"
-	local ret=$?
-=======
 	zip -0rq "${bundle}.zip" .
 	cd "$CWD" || abort
 	# if building apk, sign the merged apk properly
@@ -349,7 +272,6 @@ merge_splits() {
 		cp "${bundle}.zip" "${output}"
 		local ret=$?
 	fi
->>>>>>> template/main
 	rm -r "${bundle}-zip" "${bundle}.zip" "${bundle}.mzip" || :
 	return $ret
 }
@@ -376,24 +298,6 @@ apk_mirror_search() {
 }
 dl_apkmirror() {
 	local url=$1 version=${2// /-} output=$3 arch=$4 dpi=$5 is_bundle=false
-<<<<<<< HEAD
-	if [ "$arch" = "arm-v7a" ]; then arch="armeabi-v7a"; fi
-	local resp node app_table dlurl=""
-	url="${url}/${url##*/}-${version//./-}-release/"
-	resp=$(req "$url" -) || return 1
-	node=$($HTMLQ "div.table-row.headerFont:nth-last-child(1)" -r "span:nth-child(n+3)" <<<"$resp")
-	if [ "$node" ]; then
-		if ! dlurl=$(apk_mirror_search "$resp" "$dpi" "${arch}" "APK"); then
-			if ! dlurl=$(apk_mirror_search "$resp" "$dpi" "${arch}" "BUNDLE"); then
-				return 1
-			else is_bundle=true; fi
-		fi
-		[ -z "$dlurl" ] && return 1
-		resp=$(req "$dlurl" -)
-	fi
-	url=$(echo "$resp" | $HTMLQ --base https://www.apkmirror.com --attribute href "a.btn") || return 1
-	url=$(req "$url" - | $HTMLQ --base https://www.apkmirror.com --attribute href "span > a[rel = nofollow]") || return 1
-=======
 	if [ -f "${output}.apkm" ]; then
 		is_bundle=true
 	else
@@ -415,7 +319,6 @@ dl_apkmirror() {
 		url=$(req "$url" - | $HTMLQ --base https://www.apkmirror.com --attribute href "span > a[rel = nofollow]") || return 1
 	fi
 
->>>>>>> template/main
 	if [ "$is_bundle" = true ]; then
 		req "$url" "${output}.apkm"
 		merge_splits "${output}.apkm" "${output}"
@@ -521,11 +424,7 @@ check_sig() {
 
 build_rv() {
 	eval "declare -A args=${1#*=}"
-<<<<<<< HEAD
-	local version build_mode_arr pkg_name
-=======
 	local version="" pkg_name=""
->>>>>>> template/main
 	local mode_arg=${args[build_mode]} version_mode=${args[version]}
 	local app_name=${args[app_name]}
 	local app_name_l=${app_name,,}
@@ -539,24 +438,15 @@ build_rv() {
 	p_patcher_args+=("$(join_args "${args[excluded_patches]}" -e) $(join_args "${args[included_patches]}" -i)")
 	[ "${args[exclusive_patches]}" = true ] && p_patcher_args+=("--exclusive")
 
-<<<<<<< HEAD
-	for dl_p in archive apkmirror uptodown; do
-		if [ -z "${args[${dl_p}_dlurl]}" ]; then continue; fi
-		if ! get_"${dl_p}"_resp "${args[${dl_p}_dlurl]}" || ! pkg_name=$(get_"${dl_p}"_pkg_name); then
-=======
 	local tried_dl=()
 	for dl_p in archive apkmirror uptodown; do
 		if [ -z "${args[${dl_p}_dlurl]}" ]; then continue; fi
 		if ! get_${dl_p}_resp "${args[${dl_p}_dlurl]}" || ! pkg_name=$(get_"${dl_p}"_pkg_name); then
->>>>>>> template/main
 			args[${dl_p}_dlurl]=""
 			epr "ERROR: Could not find ${table} in ${dl_p}"
 			continue
 		fi
-<<<<<<< HEAD
-=======
 		tried_dl+=("$dl_p")
->>>>>>> template/main
 		dl_from=$dl_p
 		break
 	done
@@ -586,8 +476,6 @@ build_rv() {
 		epr "empty version, not building ${table}."
 		return 0
 	fi
-<<<<<<< HEAD
-=======
 
 	if [ "$mode_arg" = module ]; then
 		build_mode_arr=(module)
@@ -597,7 +485,6 @@ build_rv() {
 		build_mode_arr=(apk module)
 	fi
 
->>>>>>> template/main
 	pr "Choosing version '${version}' for ${table}"
 	local version_f=${version// /}
 	version_f=${version_f#v}
@@ -606,10 +493,7 @@ build_rv() {
 		for dl_p in archive apkmirror uptodown; do
 			if [ -z "${args[${dl_p}_dlurl]}" ]; then continue; fi
 			pr "Downloading '${table}' from ${dl_p}"
-<<<<<<< HEAD
-=======
 			if ! isoneof $dl_p "${tried_dl[@]}"; then get_${dl_p}_resp "${args[${dl_p}_dlurl]}"; fi
->>>>>>> template/main
 			if ! dl_${dl_p} "${args[${dl_p}_dlurl]}" "$version" "$stock_apk" "$arch" "${args[dpi]}" "$get_latest_ver"; then
 				epr "ERROR: Could not download '${table}' from ${dl_p} with version '${version}', arch '${arch}', dpi '${args[dpi]}'"
 				continue
@@ -631,16 +515,6 @@ build_rv() {
 		p_patcher_args=("${p_patcher_args[@]//-[ei] ${microg_patch}/}")
 	fi
 
-<<<<<<< HEAD
-	if [ "$mode_arg" = module ]; then
-		build_mode_arr=(module)
-	elif [ "$mode_arg" = apk ]; then
-		build_mode_arr=(apk)
-	elif [ "$mode_arg" = both ]; then
-		build_mode_arr=(apk module)
-	fi
-=======
->>>>>>> template/main
 	local patcher_args patched_apk build_mode
 	local rv_brand_f=${args[rv_brand],,}
 	rv_brand_f=${rv_brand_f// /-}
@@ -669,11 +543,7 @@ build_rv() {
 				fi
 			fi
 		fi
-<<<<<<< HEAD
-		if [ ! -f "$patched_apk" ] || [ "$REBUILD" = true ]; then
-=======
 		if [ "${NORB:-}" != true ] || [ ! -f "$patched_apk" ]; then
->>>>>>> template/main
 			if ! patch_apk "$stock_apk" "$patched_apk" "${patcher_args[*]}" "${args[cli]}" "${args[ptjar]}"; then
 				epr "Building '${table}' failed!"
 				return 0
@@ -681,20 +551,12 @@ build_rv() {
 		fi
 		if [ "$build_mode" = apk ]; then
 			local apk_output="${BUILD_DIR}/${app_name_l}-${rv_brand_f}-v${version_f}-${arch_f}.apk"
-<<<<<<< HEAD
-			cp -f "$patched_apk" "$apk_output"
-=======
 			mv -f "$patched_apk" "$apk_output"
->>>>>>> template/main
 			pr "Built ${table} (non-root): '${apk_output}'"
 			continue
 		fi
 		local base_template
-<<<<<<< HEAD
-		base_template=$(mktemp -d -p $TEMP_DIR)
-=======
 		base_template=$(mktemp -d -p "$TEMP_DIR")
->>>>>>> template/main
 		cp -a $MODULE_TEMPLATE_DIR/. "$base_template"
 		local upj="${table,,}-update.json"
 
@@ -708,23 +570,12 @@ build_rv() {
 			"$base_template"
 
 		local module_output="${app_name_l}-${rv_brand_f}-magisk-v${version_f}-${arch_f}.zip"
-<<<<<<< HEAD
-		if [ ! -f "$module_output" ] || [ "$REBUILD" = true ]; then
-			pr "Packing module ${table}"
-			cp -f "$patched_apk" "${base_template}/base.apk"
-			if [ "${args[include_stock]}" = true ]; then cp -f "$stock_apk" "${base_template}/${pkg_name}.apk"; fi
-			pushd >/dev/null "$base_template" || abort "Module template dir not found"
-			zip -"$COMPRESSION_LEVEL" -FSqr "../../${BUILD_DIR}/${module_output}" .
-			popd >/dev/null || :
-		fi
-=======
 		pr "Packing module ${table}"
 		cp -f "$patched_apk" "${base_template}/base.apk"
 		if [ "${args[include_stock]}" = true ]; then cp -f "$stock_apk" "${base_template}/${pkg_name}.apk"; fi
 		pushd >/dev/null "$base_template" || abort "Module template dir not found"
 		zip -"$COMPRESSION_LEVEL" -FSqr "${BUILD_DIR}/${module_output}" .
 		popd >/dev/null || :
->>>>>>> template/main
 		pr "Built ${table} (root): '${BUILD_DIR}/${module_output}'"
 	done
 }
@@ -746,11 +597,7 @@ MODULE_ARCH=$ma" >"$1/config"
 module_prop() {
 	echo "id=${1}
 name=${2}
-<<<<<<< HEAD
-version=v${3}
-=======
 version=v${3} (${NEXT_VER_CODE})
->>>>>>> template/main
 versionCode=${NEXT_VER_CODE}
 author=j-hc
 description=${4}" >"${6}/module.prop"
