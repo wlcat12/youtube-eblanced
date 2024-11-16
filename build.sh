@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+
+echo "Enter the file name:"
+read fileName
+
+# Create the JSON structure
+echo "[" > options.json
+echo "  {" >> options.json
+echo "    \"patchName\": \"Custom branding\"," >> options.json
+echo "    \"options\": [" >> options.json
+echo "      {" >> options.json
+echo "        \"key\": \"appName\"," >> options.json
+echo "        \"value\": \"$fileName\"" >> options.json
+echo "      }" >> options.json
+echo "    ]" >> options.json
+echo "  }" >> options.json
+echo "]" >> options.json
+
 shopt -s nullglob
 trap "rm -rf temp/*tmp.* temp/*/*tmp.* temp/*-temporary-files; exit 130" INT
 

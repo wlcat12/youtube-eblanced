@@ -2,6 +2,23 @@
 
 set -e
 
+echo "Enter the file name:"
+read fileName
+
+# Create the JSON structure
+echo "[" > options.json
+echo "  {" >> options.json
+echo "    \"patchName\": \"Custom branding\"," >> options.json
+echo "    \"options\": [" >> options.json
+echo "      {" >> options.json
+echo "        \"key\": \"appName\"," >> options.json
+echo "        \"value\": \"$fileName\"" >> options.json
+echo "      }" >> options.json
+echo "    ]" >> options.json
+echo "  }" >> options.json
+echo "]" >> options.json
+
+
 pr() { echo -e "\033[0;32m[+] ${1}\033[0m"; }
 ask() {
 	local y
